@@ -20,21 +20,14 @@ public:
     std::cout << "\033[48;5;" << bgColor << "m";
   }
   void setColor(const Color &fgColor, const Color &bgColor) {
-    std::cout << "\033[48;2;" << fgColor.r << ";" << fgColor.g << ";"
+    std::cout << "\033[38;2;" << fgColor.r << ";" << fgColor.g << ";"
               << fgColor.b << "m";
-    std::cout << "\033[38;2;" << bgColor.r << ";" << bgColor.g << ";"
+    std::cout << "\033[48;2;" << bgColor.r << ";" << bgColor.g << ";"
               << bgColor.b << "m";
   }
   void setDefaultColor() {
     std::cout << "\033[39m" << std::flush;
     std::cout << "\033[49m" << std::flush;
-  }
-
-  void jetColor(int n) {
-    int r = (int)(128 - 127 * ::cosf(n * 0.01227 * 1));
-    int g = (int)(128 - 127 * ::cosf(n * 0.01227 * 3));
-    int b = (int)(128 - 127 * ::cosf(n * 0.01227 * 5));
-    setColor({r, g, b}, {255 - r, 255 - g, 255 - b});
   }
 
   int getWidth() { return m_window.ws_col; }

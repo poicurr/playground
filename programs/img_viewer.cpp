@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <iostream>
 #include <memory>
 
@@ -6,7 +7,9 @@
 #else
 #include <TerminalLinux.hpp>
 #endif
-#include <Bitmap.hpp>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -40,7 +43,8 @@ inline char glyphFromRgbInverted(uint8_t r, uint8_t g, uint8_t b) {
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
-    std::cerr << "[Usage] " << argv[0] << " 'path/to/bitmap.bmp'\n";
+    std::cerr << "[Usage] " << argv[0]
+              << " 'path/to/image.png(.jpg, .bmp, etc...)'\n";
     return 1;
   }
 
@@ -57,23 +61,27 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  Bitmap bmp(argv[1]);
-  const int imgW = bmp.getWidth();
-  const int imgH = bmp.getHeight();
-  if (imgW <= 0 || imgH <= 0) {
-    std::cerr << "Bitmap size is invalid.\n";
+  int w, h, ch;
+  stbi_uc *image = stbi_load(argv[1], &w, &h, &ch, 3);
+  if (!image) {
+    std::cerr << "failed to load image: " << argv[1] << ".\n";
     return 1;
   }
 
-  for (int ty = 1; ty <= termH; ++ty) {
-    int y0 = (static_cast<long long>(ty) * imgH) / termH;
-    int y1 = (static_cast<long long>(ty + 1) * imgH) / termH;
-    y1 = MAX(y1, MIN(imgH, y0 + 1));
+  if (w <= 0 || h <= 0) {
+    std::cerr << "image size is invalid.\n";
+    return 1;
+  }
 
-    for (int tx = 1; tx <= termW; ++tx) {
-      int x0 = (static_cast<long long>(tx) * imgW) / termW;
-      int x1 = (static_cast<long long>(tx + 1) * imgW) / termW;
-      x1 = MAX(x1, MIN(imgW, x0 + 1));
+  for (int ty = 0; ty < termH; ++ty) {
+    int y0 = (static_cast<long long>(ty) * h) / termH;
+    int y1 = (static_cast<long long>(ty + 1) * h) / termH;
+    y1 = MAX(y1, MIN(h, y0 + 1));
+
+    for (int tx = 0; tx < termW; ++tx) {
+      int x0 = (static_cast<long long>(tx) * w) / termW;
+      int x1 = (static_cast<long long>(tx + 1) * w) / termW;
+      x1 = MAX(x1, MIN(w, x0 + 1));
 
       long long sumR = 0, sumG = 0, sumB = 0;
       const int bw = x1 - x0;
@@ -82,10 +90,10 @@ int main(int argc, char *argv[]) {
 
       for (int y = y0; y < y1; ++y) {
         for (int x = x0; x < x1; ++x) {
-          auto c = bmp.getColor(x, y);
-          sumR += c.r;
-          sumG += c.g;
-          sumB += c.b;
+          size_t offset = (y * w + x) * ch;
+          sumR += image[offset + 0];
+          sumG += image[offset + 1];
+          sumB += image[offset + 2];
         }
       }
 
