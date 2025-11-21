@@ -1,42 +1,35 @@
 #pragma once
 
-#include <sys/ioctl.h>
-#include <time.h>
-#include <unistd.h>
 #include <cmath>
-#include <iostream>
-#include <thread>
-
-#include "Color.hpp"
 
 class Terminal {
-  ::winsize window_;
+public:
+  const char *const ALTBUF_ENTER = "\x1b[?1049h";
+  const char *const ALTBUF_EXIT = "\x1b[?1049l";
 
- public:
-  Terminal();
+  struct Color {
+    int r, g, b;
+  };
 
-  void setColor(int fgColor, int bgColor);
-  void setColor(const Color &fgColor, const Color &bgColor);
-  void setDefaultColor();
+  virtual void setColor(int fgColor, int bgColor) = 0;
+  virtual void setColor(const Color &fgColor, const Color &bgColor) = 0;
+  virtual void setDefaultColor() = 0;
+  virtual int getWidth() = 0;
+  virtual int getHeight() = 0;
+  virtual void moveUp(int amount) = 0;
+  virtual void moveDown(int amount) = 0;
+  virtual void moveRight(int amount) = 0;
+  virtual void moveLeft(int amount) = 0;
+  virtual void moveTo(int x, int y) = 0;
+  virtual void moveToHead() = 0;
+  virtual void put(int x, int y, char c) = 0;
+  virtual void put(int x, int y, const char *s) = 0;
+  virtual void clear() = 0;
 
-  /**
-   * @param n: 1 to 255
-   */
-  void pickFromJetColorMap(int n);
-
-  int getWidth() noexcept;
-  int getHeight() noexcept;
-
-  void moveUp(int amount);
-  void moveDown(int amount);
-  void moveRight(int amount);
-  void moveLeft(int amount);
-  void moveTo(int x, int y);
-  void moveToHead();
-  void put(int x, int y, char c);
-  void put(int x, int y, const std::string &s);
-  /**
-   * clears entire screen and delete all lines saved in the scrollback buffer
-   */
-  void clear();
+  void jetColor(int n) {
+    int r = (int)(128 - 127 * ::cosf(n * 0.01227 * 1));
+    int g = (int)(128 - 127 * ::cosf(n * 0.01227 * 3));
+    int b = (int)(128 - 127 * ::cosf(n * 0.01227 * 5));
+    setColor({r, g, b}, {255 - r, 255 - g, 255 - b});
+  }
 };

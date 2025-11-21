@@ -3,6 +3,11 @@
 #include <thread>
 
 #include <Terminal.hpp>
+#ifdef _WIN32
+#include <TerminalWindows.hpp>
+#else
+#include <TerminalLinux.hpp>
+#endif
 
 std::string getTimeString() {
   std::time_t t = std::time(nullptr);
@@ -18,7 +23,7 @@ struct Vec2 {
 };
 
 class SevenSegmentDisplay {
-  Terminal c;
+  Terminal *terminal;
   bool segment[7];
 
   using Segment = bool[7];
@@ -28,8 +33,10 @@ class SevenSegmentDisplay {
                            {1, 0, 1, 1, 1, 1, 1}, {1, 1, 1, 0, 0, 0, 0},
                            {1, 1, 1, 1, 1, 1, 1}, {1, 1, 1, 1, 0, 1, 1}};
 
- public:
-  SevenSegmentDisplay(Terminal &c_) : c{c_} { setNumber(number[0]); }
+public:
+  SevenSegmentDisplay(Terminal *terminal) : terminal{terminal} {
+    setNumber(number[0]);
+  }
   void setNumber(int n) { setNumber(number[n]); }
   void putNumber(int x, int y, int scale) {
     putSegmentA(x, y, scale);
@@ -45,15 +52,15 @@ class SevenSegmentDisplay {
     sweepY(x + scale + 1, y + scale + 2, scale - 1);
   }
 
- private:
+private:
   void sweepX(int x, int y, int length) {
     for (int i = x; i <= x + length; ++i) {
-      c.put(i, y, " ");
+      terminal->put(i, y, " ");
     }
   }
   void sweepY(int x, int y, int length) {
     for (int i = y; i <= y + length; ++i) {
-      c.put(x, i, " ");
+      terminal->put(x, i, " ");
     }
   }
   void setNumber(const bool data[7]) {
@@ -62,43 +69,51 @@ class SevenSegmentDisplay {
     }
   }
   inline void putSegmentA(int x, int y, int scale) {
-    if (!segment[0]) return;
+    if (!segment[0])
+      return;
     sweepX(x, y, scale + 1);
   }
   inline void putSegmentB(int x, int y, int scale) {
-    if (!segment[1]) return;
+    if (!segment[1])
+      return;
     sweepY(x + scale + 1, y, scale + 1);
   }
   inline void putSegmentC(int x, int y, int scale) {
-    if (!segment[2]) return;
+    if (!segment[2])
+      return;
     sweepY(x + scale + 1, y + scale + 1, scale + 1);
   }
   inline void putSegmentD(int x, int y, int scale) {
-    if (!segment[3]) return;
+    if (!segment[3])
+      return;
     sweepX(x, y + 2 * (scale + 1), scale + 1);
   }
   inline void putSegmentE(int x, int y, int scale) {
-    if (!segment[4]) return;
+    if (!segment[4])
+      return;
     sweepY(x, y + scale + 1, scale + 1);
   }
   inline void putSegmentF(int x, int y, int scale) {
-    if (!segment[5]) return;
+    if (!segment[5])
+      return;
     sweepY(x, y, scale + 1);
   }
   inline void putSegmentG(int x, int y, int scale) {
-    if (!segment[6]) return;
+    if (!segment[6])
+      return;
     sweepX(x, y + scale + 1, scale + 1);
   }
 };
 
 class DigitalClock {
-  Terminal c;
-  SevenSegmentDisplay seg[6] = {c, c, c, c, c, c};
+  Terminal *terminal;
+  SevenSegmentDisplay seg[6] = {terminal, terminal, terminal,
+                                terminal, terminal, terminal};
   Vec2 pos;
   int scale;
 
- public:
-  DigitalClock(Terminal &c_) : c{c_} {
+public:
+  DigitalClock(Terminal *terminal) : terminal(terminal) {
     pos.x = 1;
     pos.y = 1;
     scale = 2;
@@ -117,7 +132,7 @@ class DigitalClock {
         posX += (scale + 2) + 1;
       }
     }
-    c.moveToHead();
+    terminal->moveToHead();
   }
   void setTime(int d1, int d2, int d3, int d4, int d5, int d6) {
     seg[0].setNumber(d1);
@@ -128,7 +143,7 @@ class DigitalClock {
     seg[5].setNumber(d6);
   }
   void erasePrevious() {
-    c.setDefaultColor();
+    terminal->setDefaultColor();
     for (int i = 0; i < 6; ++i) {
       seg[i].setNumber(8);
     }
@@ -137,8 +152,13 @@ class DigitalClock {
 };
 
 int main() {
-  Terminal c;
-  DigitalClock clock(c);
+  Terminal *terminal;
+#ifdef _WIN32
+  terminal = new TerminalWindows();
+#else
+  terminal = new TerminalLinux();
+#endif
+  DigitalClock clock(terminal);
   const int SCALE = 2;
   const int NUM_SEGMENTS = 8;
   const int WIDTH = (SCALE + 3) * NUM_SEGMENTS - 1;
@@ -148,7 +168,7 @@ int main() {
   uint32_t i = 0u;
 
   while (true) {
-    c.clear();
+    terminal->clear();
 
     std::string timeStr = getTimeString();
     int d1 = ctoi(timeStr[0]);
@@ -166,16 +186,16 @@ int main() {
     int newX = x + velocity.x;
     int newY = y + velocity.y;
 
-    if (newX <= 1 || newX + WIDTH >= c.getWidth() + 1) {
+    if (newX <= 1 || newX + WIDTH >= terminal->getWidth() + 1) {
       velocity.x *= -1;
     }
-    if (newY <= 1 || newY + HEIGHT >= c.getHeight() + 1) {
+    if (newY <= 1 || newY + HEIGHT >= terminal->getHeight() + 1) {
       velocity.y *= -1;
     }
 
     clock.setPosition(newX, newY);
     clock.setTime(d1, d2, d3, d4, d5, d6);
-    c.pickFromJetColorMap(i++);
+    terminal->jetColor(i++);
     clock.put();
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
   }
