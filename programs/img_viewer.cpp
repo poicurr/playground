@@ -73,14 +73,14 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  for (int ty = 0; ty < termH; ++ty) {
-    int y0 = (static_cast<long long>(ty) * h) / termH;
-    int y1 = (static_cast<long long>(ty + 1) * h) / termH;
+  for (int ty = 1; ty <= termH; ++ty) {
+    int y0 = (static_cast<long long>(ty - 1) * h) / termH;
+    int y1 = (static_cast<long long>(ty) * h) / termH;
     y1 = MAX(y1, MIN(h, y0 + 1));
 
-    for (int tx = 0; tx < termW; ++tx) {
-      int x0 = (static_cast<long long>(tx) * w) / termW;
-      int x1 = (static_cast<long long>(tx + 1) * w) / termW;
+    for (int tx = 1; tx <= termW; ++tx) {
+      int x0 = (static_cast<long long>(tx - 1) * w) / termW;
+      int x1 = (static_cast<long long>(tx) * w) / termW;
       x1 = MAX(x1, MIN(w, x0 + 1));
 
       long long sumR = 0, sumG = 0, sumB = 0;
