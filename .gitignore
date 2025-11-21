@@ -11,6 +11,12 @@
 *.gch
 *.pch
 
+# Linker files
+*.ilk
+
+# Debugger Files
+*.pdb
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
@@ -31,6 +37,10 @@
 *.out
 *.app
 
-# build dir
-/build/
+# debug information files
+*.dwo
+
+.vs/
+.cache/
+build/
 
