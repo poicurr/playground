@@ -107,5 +107,6 @@ int main(int argc, char *argv[]) {
   }
 
   std::cin.get();
+  stbi_image_free(image);
   return 0;
 }
