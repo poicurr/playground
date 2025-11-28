@@ -1,10 +1,10 @@
-#include <Bitmap.hpp>
-
 #include <cmath>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <vector>
+
+#include "Bitmap.hpp"
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {

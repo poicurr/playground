@@ -7,6 +7,9 @@ public:
   const char *const ALTBUF_ENTER = "\x1b[?1049h";
   const char *const ALTBUF_EXIT = "\x1b[?1049l";
 
+  Terminal() {}
+  virtual ~Terminal() {}
+
   struct Color {
     int r, g, b;
   };

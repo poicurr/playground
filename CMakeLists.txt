@@ -44,27 +44,26 @@ FetchContent_MakeAvailable(stb)
 
 add_executable(digital_clock programs/digital_clock.cpp)
 target_include_directories(digital_clock
-  PUBLIC ${PROJECT_SOURCE_DIR}/TerminalAPI/include
+  PUBLIC ${PROJECT_SOURCE_DIR}/include
 )
 
 add_executable(rainbow programs/rainbow.cpp)
 target_include_directories(rainbow
-  PUBLIC ${PROJECT_SOURCE_DIR}/TerminalAPI/include
+  PUBLIC ${PROJECT_SOURCE_DIR}/include
 )
 
 add_executable(checkerboard programs/checkerboard.cpp)
 target_include_directories(checkerboard
-  PUBLIC ${PROJECT_SOURCE_DIR}/TerminalAPI/include
+  PUBLIC ${PROJECT_SOURCE_DIR}/include
 )
 
 add_executable(img_viewer programs/img_viewer.cpp)
 target_include_directories(img_viewer
-  PUBLIC ${PROJECT_SOURCE_DIR}/TerminalAPI/include ${stb_SOURCE_DIR}
+  PUBLIC ${PROJECT_SOURCE_DIR}/include ${stb_SOURCE_DIR}
 )
 
 add_executable(binary_dump_bmp programs/binary_dump_bmp.cpp)
 target_include_directories(binary_dump_bmp
-  PUBLIC ${PROJECT_SOURCE_DIR}/TerminalAPI/include
+  PUBLIC ${PROJECT_SOURCE_DIR}/include
 )
-
 

@@ -1,4 +1,5 @@
 #include <cmath>
+#include <ctime>
 #include <iostream>
 #include <thread>
 
@@ -152,13 +153,13 @@ public:
 };
 
 int main() {
-  Terminal *terminal;
+  std::unique_ptr<Terminal> terminal;
 #ifdef _WIN32
-  terminal = new TerminalWindows();
+  terminal = std::make_unique<TerminalWindows>();
 #else
-  terminal = new TerminalLinux();
+  terminal = std::make_unique<TerminalLinux>();
 #endif
-  DigitalClock clock(terminal);
+  DigitalClock clock(terminal.get());
   const int SCALE = 2;
   const int NUM_SEGMENTS = 8;
   const int WIDTH = (SCALE + 3) * NUM_SEGMENTS - 1;

@@ -9,11 +9,11 @@
 #endif
 
 int main() {
-  Terminal *terminal;
+  std::unique_ptr<Terminal> terminal;
 #ifdef _WIN32
-  terminal = new TerminalWindows();
+  terminal = std::make_unique<TerminalWindows>();
 #else
-  terminal = new TerminalLinux();
+  terminal = std::make_unique<TerminalLinux>();
 #endif
   int w = terminal->getWidth();
   int h = terminal->getHeight();
@@ -27,5 +27,4 @@ int main() {
     }
   }
   std::cin.get();
-  delete terminal;
 }
