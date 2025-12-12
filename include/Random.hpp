@@ -1,11 +1,14 @@
 #pragma once
 
+#include <concepts>
 #include <cstdint>
 #include <random>
 
 // PCG32
 class Random {
 public:
+  using value_type = uint32_t;
+
   explicit Random(std::uint64_t seed = std::random_device{}()) {
     m_state = 0;
     m_inc = (seed << 1u) | 1u;
@@ -34,9 +37,15 @@ private:
   }
 };
 
-// static Random g_rand;
-//
-// template <class T>
-// T rand() {
-//   return g_rand() / static_cast<T>(g_rand.max());
-// }
+template <std::floating_point T>
+T range(Random &r, T min, T max) {
+  const T normalized =
+      static_cast<T>(r() - r.min()) / static_cast<T>(r.max() - r.min());
+  return normalized * (max - min) + min;
+}
+
+template <std::integral T>
+T range(Random &r, T min, T max) {
+  const uint32_t span = static_cast<uint32_t>(max - min + 1);
+  return static_cast<T>(r() % span) + min;
+}

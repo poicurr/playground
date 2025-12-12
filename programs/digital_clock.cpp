@@ -1,6 +1,6 @@
-#include <cmath>
+#include <atomic>
+#include <csignal>
 #include <ctime>
-#include <iostream>
 #include <thread>
 
 #include <Terminal.hpp>
@@ -152,13 +152,19 @@ public:
   }
 };
 
+std::atomic<bool> g_shutdown{false};
+
+void handleSigint(int) { g_shutdown.store(true, std::memory_order_relaxed); }
+
 int main() {
-  std::unique_ptr<Terminal> terminal;
+  std::signal(SIGINT, handleSigint);
+
 #ifdef _WIN32
-  terminal = std::make_unique<TerminalWindows>();
+  std::unique_ptr<Terminal> terminal = std::make_unique<TerminalWindows>();
 #else
-  terminal = std::make_unique<TerminalLinux>();
+  std::unique_ptr<Terminal> terminal = std::make_unique<TerminalLinux>();
 #endif
+
   DigitalClock clock(terminal.get());
   const int SCALE = 2;
   const int NUM_SEGMENTS = 8;
@@ -168,7 +174,7 @@ int main() {
   Vec2 velocity{2, 1};
   uint32_t i = 0u;
 
-  while (true) {
+  while (!g_shutdown.load(std::memory_order_relaxed)) {
     terminal->clear();
 
     std::string timeStr = getTimeString();

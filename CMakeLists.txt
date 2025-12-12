@@ -42,13 +42,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(stb)
 
+# programs
 add_executable(digital_clock programs/digital_clock.cpp)
 target_include_directories(digital_clock
-  PUBLIC ${PROJECT_SOURCE_DIR}/include
-)
-
-add_executable(rainbow programs/rainbow.cpp)
-target_include_directories(rainbow
   PUBLIC ${PROJECT_SOURCE_DIR}/include
 )
 
@@ -66,4 +62,12 @@ add_executable(binary_dump_bmp programs/binary_dump_bmp.cpp)
 target_include_directories(binary_dump_bmp
   PUBLIC ${PROJECT_SOURCE_DIR}/include
 )
+
+add_executable(random_dist programs/random_dist.cpp)
+target_include_directories(random_dist
+  PUBLIC ${PROJECT_SOURCE_DIR}/include
+)
+
+# experimental
+add_executable(matcher experimental/Matcher.cpp)
 

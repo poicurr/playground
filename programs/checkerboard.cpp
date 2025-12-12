@@ -1,5 +1,5 @@
-#include <cmath>
 #include <iostream>
+#include <memory>
 
 #include <Terminal.hpp>
 #ifdef _WIN32
@@ -11,23 +11,23 @@
 static const int TILE_SIZE = 5;
 
 int main() {
-  Terminal *terminal;
 #ifdef _WIN32
-  terminal = new TerminalWindows();
+  std::unique_ptr<Terminal> terminal = std::make_unique<TerminalWindows>();
 #else
-  terminal = new TerminalLinux();
+  std::unique_ptr<Terminal> terminal = std::make_unique<TerminalLinux>();
 #endif
+
   int w = terminal->getWidth();
   int h = terminal->getHeight();
   for (int y = 1; y <= h; ++y) {
     for (int x = 1; x <= w; ++x) {
       if ((x / TILE_SIZE + y / TILE_SIZE) % 2 == 0) {
-        terminal->put(x, y, ' ');
+        terminal->setColor(colors::BLACK, colors::WHITE);
       } else {
-        terminal->put(x, y, '#');
+        terminal->setColor(colors::WHITE, colors::BLACK);
       }
+      terminal->put(x, y, ' ');
     }
   }
   std::cin.get();
-  delete terminal;
 }
