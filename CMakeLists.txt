@@ -50,10 +50,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(box2d)
 
-# Box2D triggers maybe-uninitialized warnings in some configurations (distance.c).
-# Treat them as warnings only for the dependency so our -Wextra -Werror-like setups don't break Release builds.
+# Box2D (especially in Release) can trigger -Wmaybe-uninitialized inside its C sources
+# (e.g. distance.c). This becomes fatal when the user has -Werror in their environment.
+# We only suppress it for compilers that actually understand the flag.
 if (TARGET box2d)
-  target_compile_options(box2d PRIVATE -Wno-maybe-uninitialized)
+  if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(box2d PRIVATE -Wno-maybe-uninitialized)
+  elseif (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    # Clang does not have -Wno-maybe-uninitialized in the same form.
+    # The equivalent is usually not needed, but we can silence the generic one if it appears.
+    # target_compile_options(box2d PRIVATE -Wno-uninitialized)
+  endif()
 endif()
 
 # programs
