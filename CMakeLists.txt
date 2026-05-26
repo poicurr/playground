@@ -13,6 +13,12 @@ if (MSVC AND NOT DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
 
+# Windows headers define min/max macros which break std::min / std::max.
+# This must be defined early so it affects all includes (including from dependencies like Box2D).
+if (WIN32)
+  add_compile_definitions(NOMINMAX)
+endif()
+
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
   message(STATUS "System: ${CMAKE_SYSTEM_NAME}")
