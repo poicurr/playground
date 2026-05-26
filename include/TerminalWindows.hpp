@@ -20,7 +20,10 @@ public:
       SetConsoleMode(h, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
       m_enabled = true;
     }
+    m_hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
     std::cout << ALTBUF_ENTER << "\033[?25l";
+    clear();
     std::cout.flush();
   }
 
@@ -33,52 +36,84 @@ public:
     }
   }
 
-  void setColor(int fgColor, int bgColor) {
-    std::cout << "\033[38;5;" << fgColor << "m";
-    std::cout << "\033[48;5;" << bgColor << "m";
+  void setColor(int fgColor, int bgColor) override {
+    std::cout << "\033[38;5;" << fgColor << "m\033[48;5;" << bgColor << "m";
   }
-  void setColor(const Color &fgColor, const Color &bgColor) {
+  void setColor(const Color &fgColor, const Color &bgColor) override {
     std::cout << "\033[38;2;" << fgColor.r << ";" << fgColor.g << ";"
-              << fgColor.b << "m";
-    std::cout << "\033[48;2;" << bgColor.r << ";" << bgColor.g << ";"
+              << fgColor.b << "m\033[48;2;" << bgColor.r << ";" << bgColor.g << ";"
               << bgColor.b << "m";
   }
-  void setDefaultColor() {
-    std::cout << "\033[39m" << std::flush;
-    std::cout << "\033[49m" << std::flush;
+  void setDefaultColor() override {
+    std::cout << "\033[39m\033[49m";
   }
 
-  int getWidth() { return m_info.srWindow.Right - m_info.srWindow.Left + 1; }
-  int getHeight() { return m_info.srWindow.Bottom - m_info.srWindow.Top + 1; }
+  int getWidth() override {
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (GetConsoleScreenBufferInfo(h, &m_info)) {
+      return m_info.srWindow.Right - m_info.srWindow.Left + 1;
+    }
+    return 80;
+  }
+  int getHeight() override {
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (GetConsoleScreenBufferInfo(h, &m_info)) {
+      return m_info.srWindow.Bottom - m_info.srWindow.Top + 1;
+    }
+    return 24;
+  }
 
-  void moveUp(int amount) {
-    std::cout << "\033[" << amount << "A" << std::flush;
+  void moveUp(int amount) override {
+    std::cout << "\033[" << amount << "A";
   }
-  void moveDown(int amount) {
-    std::cout << "\033[" << amount << "B" << std::flush;
+  void moveDown(int amount) override {
+    std::cout << "\033[" << amount << "B";
   }
-  void moveRight(int amount) {
-    std::cout << "\033[" << amount << "C" << std::flush;
+  void moveRight(int amount) override {
+    std::cout << "\033[" << amount << "C";
   }
-  void moveLeft(int amount) {
-    std::cout << "\033[" << amount << "D" << std::flush;
+  void moveLeft(int amount) override {
+    std::cout << "\033[" << amount << "D";
   }
-  void moveTo(int x, int y) {
-    std::cout << "\033[" << y << ";" << x << "H" << std::flush;
+  void moveTo(int x, int y) override {
+    std::cout << "\033[" << y << ";" << x << "H";
   }
-  void moveToHead() { moveTo(1, 1); }
-  void put(int x, int y, char c) {
+  void moveToHead() override { moveTo(1, 1); }
+  void put(int x, int y, char c) override {
     moveTo(x, y);
-    std::cout << c << std::flush;
+    std::cout << c;
   }
-  void put(int x, int y, const char *s) {
+  void put(int x, int y, const char *s) override {
     moveTo(x, y);
-    std::cout << s << std::flush;
+    std::cout << s;
   }
-  void clear() { std::cout << "\033[3J" << std::flush; }
+  void clear() override {
+    std::cout << "\033[H\033[2J";
+  }
+
+  // Call at end of frame
+  void present() override { std::cout.flush(); }
+
+  void write(const char* data, size_t size) override {
+    if (m_hOut == INVALID_HANDLE_VALUE || size == 0) {
+      std::cout.write(data, static_cast<std::streamsize>(size));
+      std::cout.flush();
+      return;
+    }
+
+    // Use native Windows API for bulk output (faster than iostream for large frames)
+    DWORD written = 0;
+    BOOL ok = WriteFile(m_hOut, data, static_cast<DWORD>(size), &written, nullptr);
+    if (!ok) {
+      // Fallback if WriteFile fails for some reason
+      std::cout.write(data, static_cast<std::streamsize>(size));
+      std::cout.flush();
+    }
+  }
 
 private:
   bool m_enabled{false};
   DWORD m_prevMode{0};
   CONSOLE_SCREEN_BUFFER_INFO m_info;
+  HANDLE m_hOut{INVALID_HANDLE_VALUE};
 };

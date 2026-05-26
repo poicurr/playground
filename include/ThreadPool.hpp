@@ -1,5 +1,10 @@
 #pragma once
 
+// NOTE: This ThreadPool has never been used in the playground.
+// It also contains a bug: the worker thread creation line is incorrect
+// (emplace_back a Worker onto vector<std::thread>).
+// Left here for historical reasons / future experiments. Do not rely on it.
+
 #include <condition_variable>
 #include <deque>
 #include <functional>

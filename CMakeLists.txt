@@ -42,6 +42,20 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(stb)
 
+# Box2D (physics)
+FetchContent_Declare(
+    box2d
+    GIT_REPOSITORY https://github.com/erincatto/box2d.git
+    GIT_TAG        v3.1.0
+)
+FetchContent_MakeAvailable(box2d)
+
+# Box2D triggers maybe-uninitialized warnings in some configurations (distance.c).
+# Treat them as warnings only for the dependency so our -Wextra -Werror-like setups don't break Release builds.
+if (TARGET box2d)
+  target_compile_options(box2d PRIVATE -Wno-maybe-uninitialized)
+endif()
+
 # programs
 add_executable(digital_clock programs/digital_clock.cpp)
 target_include_directories(digital_clock
@@ -67,6 +81,28 @@ add_executable(random_dist programs/random_dist.cpp)
 target_include_directories(random_dist
   PUBLIC ${PROJECT_SOURCE_DIR}/include
 )
+
+add_executable(bounce programs/bounce.cpp)
+target_include_directories(bounce
+  PUBLIC ${PROJECT_SOURCE_DIR}/include
+)
+
+add_executable(fire programs/fire.cpp)
+target_include_directories(fire
+  PUBLIC ${PROJECT_SOURCE_DIR}/include
+)
+
+add_executable(physics programs/physics.cpp)
+target_include_directories(physics
+  PUBLIC ${PROJECT_SOURCE_DIR}/include
+)
+target_link_libraries(physics PRIVATE box2d)
+
+add_executable(demolition programs/demolition.cpp)
+target_include_directories(demolition
+  PUBLIC ${PROJECT_SOURCE_DIR}/include
+)
+target_link_libraries(demolition PRIVATE box2d)
 
 # experimental
 add_executable(matcher experimental/Matcher.cpp)

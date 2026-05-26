@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <iostream>
 
 class Terminal {
 public:
@@ -13,6 +14,16 @@ public:
 
   struct Color {
     int r, g, b;
+  };
+
+  // Minimal mouse state for playground use
+  struct MouseState {
+    int x = 0;      // 0-based cell x
+    int y = 0;      // 0-based cell y
+    bool left = false;
+    bool middle = false;
+    bool right = false;
+    bool anyButtonDown = false;
   };
 
   Color invert(const Color &color) {
@@ -33,6 +44,21 @@ public:
   virtual void put(int x, int y, char c) = 0;
   virtual void put(int x, int y, const char *s) = 0;
   virtual void clear() = 0;
+  virtual void present() { /* no-op default */ }
+
+  // --- Mouse support (best effort, Linux primary) ---
+  virtual void enableMouse([[maybe_unused]] bool trackMotion = true) {}
+  virtual void disableMouse() {}
+
+  // Non-blocking poll. Returns true if state was updated.
+  virtual bool pollMouse([[maybe_unused]] MouseState& out) { return false; }
+
+  // Efficient bulk output. On Windows this can use the native console handle.
+  virtual void write(const char* data, size_t size) {
+    // Default fallback
+    std::cout.write(data, static_cast<std::streamsize>(size));
+    std::cout.flush();
+  }
 
   void jetColor(int n) {
     uint8_t r = (128 - 127 * ::cosf(n * 0.01227 * 1));

@@ -61,7 +61,7 @@ public:
     // load header
     char headerBuffer[BITMAP_HEADER_SIZE];
     fin.read(headerBuffer, sizeof(char) * BITMAP_HEADER_SIZE);
-    BitmapFileHeader *fileHeader = (BitmapFileHeader *)headerBuffer;
+    [[maybe_unused]] BitmapFileHeader *fileHeader = (BitmapFileHeader *)headerBuffer;
     BitmapInfoHeader *infoHeader =
         (BitmapInfoHeader *)(headerBuffer + BITMAP_FILE_HEADER_SIZE);
 
@@ -93,7 +93,7 @@ public:
       return;
     // generate header buffer
     char headerBuffer[BITMAP_HEADER_SIZE];
-    BitmapFileHeader *fileHeader = (BitmapFileHeader *)headerBuffer;
+    [[maybe_unused]] BitmapFileHeader *fileHeader = (BitmapFileHeader *)headerBuffer;
     BitmapInfoHeader *infoHeader =
         (BitmapInfoHeader *)(headerBuffer + BITMAP_FILE_HEADER_SIZE);
 
