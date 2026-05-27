@@ -117,6 +117,9 @@ target_include_directories(demolition
 )
 target_link_libraries(demolition PRIVATE box2d)
 
+add_executable(robovoice programs/robovoice.cpp)
+target_compile_features(robovoice PRIVATE cxx_std_20)
+
 # experimental
 add_executable(matcher experimental/Matcher.cpp)
 
